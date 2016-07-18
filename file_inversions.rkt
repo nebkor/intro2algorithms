@@ -33,3 +33,16 @@
             (help (cdr l1) l2 (append m (list c1)))))]))
   (help l1 l2 '()))
 
+(define (msort lst)
+  (define (help lst len)
+    (if (< len 2)
+        lst
+        (let* ([right-len (if (even? len)
+                              (/ len 2)
+                              (/ (sub1 len) 2))]
+               [left-len (- len right-len)]
+               [right (take-right lst right-len)]
+               [left (drop-right lst right-len)])
+          (merge (help left left-len)
+                 (help right right-len)))))
+  (help lst (length lst)))
