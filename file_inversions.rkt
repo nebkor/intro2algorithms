@@ -5,15 +5,15 @@
   (define (merge l1 l2)
     (define (help l1 l2 m)
       (cond
-       [(and (null? l1) (null? l2)) m]
-       [(null? l1) (append m l2)]
-       [(null? l2) (append m l1)]
+       [(and (null? l1) (null? l2)) (reverse m)]
+       [(null? l1) (append (reverse m) l2)]
+       [(null? l2) (append (reverse m) l1)]
        [else
         (let ([c1 (car l1)]
               [c2 (car l2)])
           (if (> c1 c2)
-              (help l1 (cdr l2) (append m (list c2)))
-              (help (cdr l1) l2 (append m (list c1)))))]))
+              (help l1 (cdr l2) (cons c2 m))
+              (help (cdr l1) l2 (cons c1 m))))]))
     (help l1 l2 '()))
 
   ;; now to recursively split and merge
@@ -75,4 +75,4 @@
          [nums (map (lambda (x) (string->number x))
                     (call-with-input-file numfile
                       (lambda (in) (port->lines in))))])
-    (msort nums)))
+    (take-right (msort nums) 10)))
