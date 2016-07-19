@@ -2,32 +2,33 @@
 
 (define (msort lst)
   ;; called by the main helper function
-  (define (merge l1 l2)
-    (define (help l1 l2 m)
+  (define (merge left right)
+    (define (help left right m cnt)
       (cond
-       [(and (null? l1) (null? l2)) (reverse m)]
-       [(null? l1) (append (reverse m) l2)]
-       [(null? l2) (append (reverse m) l1)]
+       [(and (null? left) (null? right)) (cons (reverse m) cnt)]
+       [(null? left) (cons (append (reverse m) right) cnt)]
+       [(null? right) (cons (append (reverse m) left) cnt)]
        [else
-        (let ([c1 (car l1)]
-              [c2 (car l2)])
-          (if (> c1 c2)
-              (help l1 (cdr l2) (cons c2 m))
-              (help (cdr l1) l2 (cons c1 m))))]))
-    (help l1 l2 '()))
+        (let ([cl (car left)]
+              [cr (car right)])
+          (if (> cl cr)
+              (help left (cdr right) (cons cr m) (add1 cnt))
+              (help (cdr left) right (cons cl m) cnt)))]))
+    (help left right '() 0))
 
   ;; now to recursively split and merge
   (define (main-help lst len)
     (if (< len 2)
-        lst
+        (cons lst 0)
         (let* ([right-len (if (even? len)
                               (/ len 2)
                               (/ (sub1 len) 2))]
                [left-len (- len right-len)]
                [right (take-right lst right-len)]
                [left (drop-right lst right-len)])
-          (merge (main-help left left-len)
-                 (main-help right right-len)))))
+          (merge (car (main-help left left-len))
+                 (car (main-help right right-len))))))
+
   ;; returns the sorted list
   (main-help lst (length lst)))
 
@@ -59,5 +60,9 @@
          [numfile (vector-ref args 0)]
          [nums (map (lambda (x) (string->number x))
                     (call-with-input-file numfile
-                      (lambda (in) (port->lines in))))])
-    (take-right (msort nums) 10)))
+                      (lambda (in) (port->lines in))))]
+         [snums (msort nums)]
+         [count (cdr snums)]
+         [tail (take-right (car snums) 10)])
+    (displayln (~a "Last ten items: " tail))
+    (displayln (~a "inversions: " count))))
