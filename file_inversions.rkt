@@ -1,36 +1,45 @@
 #lang racket
 
 (define (msort lst)
+
+  (define invs 0)
+
   ;; called by the main helper function
   (define (merge left right)
     (define (help left right m cnt)
-      (cond
-       [(and (null? left) (null? right)) (cons (reverse m) cnt)]
-       [(null? left) (cons (append (reverse m) right) cnt)]
-       [(null? right) (cons (append (reverse m) left) cnt)]
-       [else
-        (let ([cl (car left)]
-              [cr (car right)])
-          (if (> cl cr)
-              (help left (cdr right) (cons cr m) (add1 cnt))
-              (help (cdr left) right (cons cl m) cnt)))]))
+      (let ([mid (length right)]
+            [end-index (length m)])
+        (cond
+         [(and (null? left) (null? right)) (begin (set! invs (+ invs cnt))
+                                                  (reverse m))]
+         [(null? left) (begin (set! invs (+ invs cnt))
+                              (append (reverse m) right))]
+         [(null? right) (begin (set! invs (+ invs cnt (length m)))
+                               (append (reverse m) left))]
+         [else
+          (let ([cl (car left)]
+                [cr (car right)])
+            (if (> cl cr)
+                (help left (cdr right) (cons cr m) (+ (sub1 (length left)) cnt))
+                (help (cdr left) right (cons cl m) cnt)))])))
     (help left right '() 0))
 
   ;; now to recursively split and merge
   (define (main-help lst len)
     (if (< len 2)
-        (cons lst 0)
+        lst
         (let* ([right-len (if (even? len)
                               (/ len 2)
                               (/ (sub1 len) 2))]
                [left-len (- len right-len)]
                [right (take-right lst right-len)]
                [left (drop-right lst right-len)])
-          (merge (car (main-help left left-len))
-                 (car (main-help right right-len))))))
+          (merge (main-help left left-len)
+                 (main-help right right-len)))))
 
   ;; returns the sorted list
-  (main-help lst (length lst)))
+  (let ([res (main-help lst (length lst))])
+    (cons res invs)))
 
 (define (cmerge l1 l2)
     (define (help l1 l2 m cnt)
